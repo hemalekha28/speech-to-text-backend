@@ -1,0 +1,6 @@
+.env
+.env.local
+.env.*.local
+OPENAI_API_KEY=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
+# Node modules (if using Node.js)
+node_modules/
