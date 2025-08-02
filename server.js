@@ -52,10 +52,12 @@ if (!OPENAI_API_KEY) {
   console.log("✅ OpenAI API key is set and appears valid")
 }
 
-mongoose
-  .connect("mongodb://localhost:27017/speechtotext")
-  .then(() => console.log("✅ MongoDB Connected"))
-  .catch((err) => console.log("❌ MongoDB Error:", err))
+mongoose.connect(process.env.MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
+.then(() => console.log("Connected to MongoDB Atlas"))
+.catch(err => console.error("MongoDB connection error:", err));
 
 const TranscriptionSchema = new mongoose.Schema({
   text: String,
