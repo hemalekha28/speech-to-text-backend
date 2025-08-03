@@ -52,12 +52,50 @@ if (!OPENAI_API_KEY) {
   console.log("✅ OpenAI API key is set and appears valid")
 }
 
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
+mongoose.connect(process.env.MONGODB_URI)
+.then(() => {
+  console.log("✅ Connected to MongoDB Atlas")
+  console.log("📊 Database:", mongoose.connection.db.databaseName)
 })
-.then(() => console.log("Connected to MongoDB Atlas"))
-.catch(err => console.error("MongoDB connection error:", err));
+.catch(err => {
+  console.error("❌ MongoDB connection error:", err.message)
+  
+  // Provide specific troubleshooting based on error type
+  if (err.message.includes('IP') || err.message.includes('whitelist')) {
+    console.error("🔍 SOLUTION: Add your IP to MongoDB Atlas Network Access:")
+    console.error("   1. Go to MongoDB Atlas Dashboard")
+    console.error("   2. Navigate to Network Access")
+    console.error("   3. Add IP Address: 0.0.0.0/0 (for testing)")
+    console.error("   4. Or add Render's IP ranges for production")
+  }
+  
+  if (err.message.includes('authentication')) {
+    console.error("🔍 SOLUTION: Check your username/password in connection string")
+  }
+  
+  process.exit(1)
+});
+
+// Enhanced connection monitoring
+mongoose.connection.on('connected', () => {
+  console.log('🟢 Mongoose connected to MongoDB')
+})
+
+mongoose.connection.on('error', (err) => {
+  console.error('🔴 Mongoose connection error:', err)
+})
+
+mongoose.connection.on('disconnected', () => {
+  console.log('🟡 Mongoose disconnected')
+})
+
+// Graceful shutdown
+process.on('SIGINT', async () => {
+  console.log('\n🛑 Shutting down gracefully...')
+  await mongoose.connection.close()
+  console.log('✅ MongoDB connection closed')
+  process.exit(0)
+})
 
 const TranscriptionSchema = new mongoose.Schema({
   text: String,
